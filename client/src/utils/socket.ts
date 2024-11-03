@@ -18,4 +18,4 @@ const getSocket = () => {
     return socket
 }
 
-export { getSocket }
+export { getSocket, Socket }

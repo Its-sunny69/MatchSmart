@@ -33,10 +33,17 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on("message", (msg, roomId, sender) => {
+        console.log(msg, roomId, sender)
+        socket.to(roomId).emit("message", msg, sender);
+    })
+
     socket.on("offer", (offer, roomId, id) => {
         const room = rooms[roomId]
-        const user = room[0].id == id ? room[1].socket : room[0].socket
-        user.emit("offer", offer, roomId);
+        if (room) {
+            const user = room[0].id == id ? room[1].socket : room[0].socket
+            user.emit("offer", offer, roomId);
+        }
     });
 
     socket.on("answer", (answer, roomId, id) => {

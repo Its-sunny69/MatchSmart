@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getSocket, Socket } from "../utils/socket";
+import Chatbox from "./Chatbox";
+import { Button } from "./ui/button";
 
 const ICE_SERVERS = {
     iceServers: [
@@ -21,20 +23,14 @@ export default function Hero() {
     const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
     const senderPeerConnection = useRef<RTCPeerConnection | null>(null);
     const receiverPeerConnection = useRef<RTCPeerConnection | null>(null);
-    const [socket, setSocket] = useState<Socket | null>(null);
+    const socket = useRef<Socket>(getSocket()).current;
     const [localAudioTrack, setLocalAudioTrack] = useState<MediaStreamTrack | null>(null);
     const [localVideoTrack, setlocalVideoTrack] = useState<MediaStreamTrack | null>(null);
-    const [remoteVideoTrack, setRemoteVideoTrack] = useState<MediaStreamTrack | null>(null);
-    const [remoteAudioTrack, setRemoteAudioTrack] = useState<MediaStreamTrack | null>(null);
     const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-    const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
-    const [roomId, setRoomId] = useState<string | null>(null);
+    const [roomId, setRoomId] = useState<string>('');
     const [waiting, setWaiting] = useState(true);
 
     useEffect(() => {
-        const socket = getSocket();
-        setSocket(socket);
-
         socket.on("connect", () => console.log("Connected to the server"));
         socket.on("waiting", () => setWaiting(true));
         socket.on("room-connected", (id) => {
@@ -46,33 +42,21 @@ export default function Hero() {
             const pc = new RTCPeerConnection(ICE_SERVERS);
             receiverPeerConnection.current = pc;
             await pc.setRemoteDescription(offer);
-
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
-            setRemoteStream(new MediaStream());
-
-            console.log(pc)
-            setRemoteStream(new MediaStream());
 
             setTimeout(() => {
                 const track1 = pc.getTransceivers()[0].receiver.track
                 const track2 = pc.getTransceivers()[1].receiver.track
-                if (track1.kind === "video") {
-                    setRemoteVideoTrack(track1);
-                    setRemoteAudioTrack(track2);
-                    remoteStream?.addTrack(track1);
-                    remoteStream?.addTrack(track2);
-                } else {
-                    setRemoteVideoTrack(track2);
-                    setRemoteAudioTrack(track1);
-                    remoteStream?.addTrack(track2);
-                    remoteStream?.addTrack(track1);
-                }
 
                 // Update remoteVideoRef with the remote stream
                 if (remoteVideoRef.current) {
-                    console.log(remoteStream)
-                    remoteVideoRef.current.srcObject = new MediaStream([track1, track2]);
+                    if (track1.kind === "video") {
+                        remoteVideoRef.current.srcObject = new MediaStream([track1, track2]);
+                    }
+                    else {
+                        remoteVideoRef.current.srcObject = new MediaStream([track2, track1]);
+                    }
                     remoteVideoRef.current.play();
                 }
             }, 100)
@@ -104,7 +88,7 @@ export default function Hero() {
             senderPeerConnection.current?.close();
             receiverPeerConnection.current?.close();
         };
-    }, []);
+    }, [socket]);
 
     useEffect(() => {
         if (localStream) {
@@ -178,32 +162,35 @@ export default function Hero() {
     };
 
     return (
-        <div className="w-full h-full min-h-[500px] bg-gray-500 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            <div className="w-full h-[300px] bg-red-600">
-                <video className="w-full h-full border-2" autoPlay playsInline muted ref={localVideoRef}></video>
+        <div className="w-full h-fit min-h-[500px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
+            <div className="w-full h-full flex flex-col">
+                <div className="w-full h-[300px] bg-red-600">
+                    <video className="w-full h-full" autoPlay playsInline muted ref={localVideoRef}></video>
+                </div>
+                <div className="w-full h-[300px] bg-blue-600">
+                    {localStream && waiting && <p>Waiting for a partner...</p>}
+                    <video className="w-full h-full" autoPlay playsInline ref={remoteVideoRef}></video>
+                </div>
             </div>
-            <div className="w-full h-[300px] bg-blue-600">
-                {localStream && waiting && <p>Waiting for a partner...</p>}
-                <video className="w-full h-full border-2" autoPlay playsInline ref={remoteVideoRef}></video>
-            </div>
-            <div className="w-full h-[200px] flex flex-col justify-center items-start p-2">
-                <button
+            <div className="w-full h-fit flex flex-col justify-center items-start p-2">
+                <Button
                     type="button"
                     disabled={!waiting}
                     className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
                     onClick={startCamera}
                 >
                     {waiting ? "Find a Partner" : "Connected"}
-                </button>
-                <button
+                </Button>
+                <Button
                     type="button"
                     className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
                     onClick={stopCamera}
                 >
                     Stop
-                </button>
+                </Button>
                 <h1>{roomId}</h1>
                 <h2>My Id: {socket?.id}</h2>
+                <Chatbox roomId={roomId} socket={socket} />
             </div>
         </div>
     );

@@ -8,10 +8,6 @@ const getSocket = () => {
         console.log("Connected:", socket.id);
     });
 
-    socket.on("message", (msg: string) => {
-        console.log("Received message:", msg);
-    });
-
     socket.on("disconnect", () => {
         console.log("Disconnected:", socket.id);
     })

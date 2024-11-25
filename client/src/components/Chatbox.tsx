@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Socket } from "socket.io-client";
+import SendSvg from "../assets/send.svg";
+import "../App.css"
 
 interface ChatboxProps {
   roomId: string;
@@ -84,7 +86,11 @@ const Chatbox: React.FC<ChatboxProps> = ({ roomId, socket }) => {
   }, [messages]);
 
   // Function to interpolate between two colors
-  const interpolateColor = (color1: number[], color2: number[], factor: number) => {
+  const interpolateColor = (
+    color1: number[],
+    color2: number[],
+    factor: number
+  ) => {
     return color1.map((start, i) =>
       Math.round(start + (color2[i] - start) * factor)
     );
@@ -94,11 +100,11 @@ const Chatbox: React.FC<ChatboxProps> = ({ roomId, socket }) => {
     const visibility = visibleMessages[index] || 0;
 
     const color1 = [18, 169, 134]; // #12a986 (green)
-    const color2 = [63, 55, 174];  // #3f37ae (purple)
+    const color2 = [63, 55, 174]; // #3f37ae (purple)
 
     // Interpolate based on visibility
     const interpolatedColor = interpolateColor(color1, color2, visibility);
-    return `rgb(${interpolatedColor.join(',')})`;
+    return `rgb(${interpolatedColor.join(",")})`;
   };
 
   const handleSendMessage = () => {
@@ -117,9 +123,9 @@ const Chatbox: React.FC<ChatboxProps> = ({ roomId, socket }) => {
 
   return (
     <div className="w-full h-fit flex-col">
-      <div className="w-full bg-[url('../src/assets/chat-wallpaper.jpg')] bg-cover border-2 min-h-[200px] max-h-[400px] ">
+      <div className="w-full bg-[url('../src/assets/chat-background.jpeg')] bg-cover border-2 min-h-[200px] max-h-[400px] p-1">
         <div
-          className="w-full h-[20rem] overflow-y-auto"
+          className="customScroll w-full h-[20rem] overflow-y-auto"
           ref={chatContainerRef}
         >
           {messages.map((msgObj, index) => (
@@ -136,7 +142,10 @@ const Chatbox: React.FC<ChatboxProps> = ({ roomId, socket }) => {
                     : "bg-[#d1d5db55] backdrop-blur-sm text-white ml-0 rounded-bl-[2px]"
                 }`}
                 style={{
-                  backgroundColor: msgObj.id === socket.id ? getBackgroundColor(index) : "#d1d5db55",  
+                  backgroundColor:
+                    msgObj.id === socket.id
+                      ? getBackgroundColor(index)
+                      : "#d1d5db55",
                 }}
               >
                 <p className="break-words whitespace-pre-wrap p-1 leading-4 font-light">
@@ -151,10 +160,10 @@ const Chatbox: React.FC<ChatboxProps> = ({ roomId, socket }) => {
           ))}
         </div>
         <div className="w-full mt-5 flex justify-center items-center">
-          <div className=" bg-green-300  w-[90%] flex justify-center items-center">
-            <div className="w-3/4 bg-red-300 flex justify-center items-center">
+          <div className=" border border-white bg-[#d1d5db55] backdrop-blur-sm w-full mx-1  md:w-[70%] flex justify-center items-center rounded-full p-1">
+            <div className="w-full mx-2 flex justify-center items-center rounded-full">
               <Input
-                className="w-full py-2 text-sm border-none"
+                className="w-full py-2 text-sm border-none focus-visible:ring-0"
                 placeholder="Message..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
@@ -167,10 +176,10 @@ const Chatbox: React.FC<ChatboxProps> = ({ roomId, socket }) => {
               />
             </div>
             <Button
-              className="border-2 py-3 px-10 bg-blue-500 text-white"
+              className="border-2 group py-1 px-3.5 bg-[#12a986] rounded-full hover:bg-[#12a986] border-none active:scale-95 transition-all"
               onClick={handleSendMessage}
             >
-              Send
+              <img src={SendSvg} alt="Send" className="group-hover:rotate-45 transition-all" />
             </Button>
           </div>
         </div>

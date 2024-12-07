@@ -7,7 +7,7 @@ import "../App.css"
 
 interface ChatboxProps {
   roomId: string;
-  socket: Socket;
+  socket: Socket | null;
 }
 
 interface Message {
@@ -25,13 +25,13 @@ const Chatbox: React.FC<ChatboxProps> = ({ roomId, socket }) => {
 
   useEffect(() => {
     // Listen for incoming messages and update the messages array
-    socket.on("message", (msg: string, id: string) => {
+    socket?.on("message", (msg: string, id: string) => {
       setMessages((prevMessages) => [...prevMessages, { id, msg }]);
     });
 
     // Clean up the listener when the component unmounts
     return () => {
-      socket.off("message");
+      socket?.off("message");
     };
   }, [socket]);
 
@@ -113,10 +113,10 @@ const Chatbox: React.FC<ChatboxProps> = ({ roomId, socket }) => {
     }
 
     // Emit the message to the server
-    socket.emit("message", message, roomId, socket.id!); // Use `socket.id!` to assert non-nullable
+    socket?.emit("message", message, roomId, socket.id!); // Use `socket.id!` to assert non-nullable
     setMessages((prevMessages) => [
       ...prevMessages,
-      { id: socket.id!, msg: message },
+      { id: socket?.id!, msg: message },
     ]);
     setMessage("");
   };
@@ -131,19 +131,17 @@ const Chatbox: React.FC<ChatboxProps> = ({ roomId, socket }) => {
           {messages.map((msgObj, index) => (
             <div
               key={index}
-              className={`w-full p-2 flex justify-start items-start ${
-                msgObj.id === socket.id ? "" : ""
-              }`}
+              className={`w-full p-2 flex justify-start items-start ${msgObj.id === socket?.id ? "" : ""
+                }`}
             >
               <div
-                className={`max-w-xs px-1.5 py-1 rounded-xl ${
-                  msgObj.id === socket.id
+                className={`max-w-xs px-1.5 py-1 rounded-xl ${msgObj.id === socket?.id
                     ? " text-white mr-0 rounded-br-[2px]"
                     : "bg-[#d1d5db55] backdrop-blur-sm text-white ml-0 rounded-bl-[2px]"
-                }`}
+                  }`}
                 style={{
                   backgroundColor:
-                    msgObj.id === socket.id
+                    msgObj.id === socket?.id
                       ? getBackgroundColor(index)
                       : "#d1d5db55",
                 }}

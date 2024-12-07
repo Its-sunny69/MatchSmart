@@ -23,22 +23,24 @@ export default function Hero() {
     const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
     const senderPeerConnection = useRef<RTCPeerConnection | null>(null);
     const receiverPeerConnection = useRef<RTCPeerConnection | null>(null);
-    const socket = useRef<Socket>(getSocket()).current;
+    const socket = useRef<Socket | null>(null);
     const [localAudioTrack, setLocalAudioTrack] = useState<MediaStreamTrack | null>(null);
     const [localVideoTrack, setlocalVideoTrack] = useState<MediaStreamTrack | null>(null);
     const [localStream, setLocalStream] = useState<MediaStream | null>(null);
     const [roomId, setRoomId] = useState<string>('');
     const [waiting, setWaiting] = useState(true);
 
+
     useEffect(() => {
-        socket.on("connect", () => console.log("Connected to the server"));
-        socket.on("waiting", () => setWaiting(true));
-        socket.on("room-connected", (id) => {
+        socket.current = getSocket();
+        
+        socket.current.on("waiting", () => setWaiting(true));
+        socket.current.on("room-connected", (id) => {
             setRoomId(id);
             setWaiting(false);
         });
 
-        socket.on("offer", async (offer, id) => {
+        socket.current.on("offer", async (offer, id) => {
             const pc = new RTCPeerConnection(ICE_SERVERS);
             receiverPeerConnection.current = pc;
             await pc.setRemoteDescription(offer);
@@ -48,7 +50,6 @@ export default function Hero() {
             setTimeout(() => {
                 const track1 = pc.getTransceivers()[0].receiver.track
                 const track2 = pc.getTransceivers()[1].receiver.track
-
                 // Update remoteVideoRef with the remote stream
                 if (remoteVideoRef.current) {
                     if (track1.kind === "video") {
@@ -63,32 +64,32 @@ export default function Hero() {
 
             pc.onicecandidate = (event) => {
                 if (event.candidate) {
-                    socket.emit("ice-candidate", event.candidate, id, socket?.id, "receiver");
+                    socket.current?.emit("ice-candidate", event.candidate, id, socket.current?.id, "receiver");
                 }
             };
-            socket.emit("answer", answer, id, socket.id);
+            socket.current?.emit("answer", answer, id, socket.current.id);
         });
 
-        socket.on("answer", (answer) => {
+        socket.current.on("answer", (answer) => {
             senderPeerConnection.current?.setRemoteDescription(answer);
         });
 
-        socket.on("ice-candidate", (candidate, type) => {
+        socket.current.on("ice-candidate", (candidate, type) => {
             const pc = type === 'sender' ? receiverPeerConnection.current : senderPeerConnection.current;
             pc?.addIceCandidate(new RTCIceCandidate(candidate));
         });
 
-        socket.on("partner-disconnected", () => {
+        socket.current.on("partner-disconnected", () => {
             if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
-            socket.emit('join');
+            socket.current?.emit('join');
         });
 
         return () => {
-            socket.disconnect();
+            socket.current?.disconnect();
             senderPeerConnection.current?.close();
             receiverPeerConnection.current?.close();
         };
-    }, [socket]);
+    }, []);
 
     useEffect(() => {
         if (localStream) {
@@ -98,23 +99,50 @@ export default function Hero() {
 
     const startCamera = async () => {
         try {
+            let gender: boolean = confirm("do you like male")
+            socket.current?.emit('setPreference', gender ? 'male' : 'female');
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } },
                 audio: true,
             });
             setLocalStream(stream);
-            const audioTrack = stream.getAudioTracks()[0]
-            const videoTrack = stream.getVideoTracks()[0]
+            const audioTrack = stream.getAudioTracks()[0];
+            const videoTrack = stream.getVideoTracks()[0];
             setLocalAudioTrack(audioTrack);
             setlocalVideoTrack(videoTrack);
+
             if (localVideoRef.current) {
-                localVideoRef.current.srcObject = new MediaStream([videoTrack]);
+                localVideoRef.current.srcObject = stream;
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+
+                if (context) {
+                    canvas.width = 1280;
+                    canvas.height = 720;
+                    const captureFrame = () => {
+                        if (localVideoRef.current && !localVideoRef.current.paused && !localVideoRef.current.ended) {
+                            context.drawImage(localVideoRef.current, 0, 0, canvas.width, canvas.height);
+                            const frame = canvas.toDataURL('image/jpeg');
+                            sendFrame(frame);
+                            setTimeout(captureFrame, 1000 / 120);
+                        }
+                    };
+                    localVideoRef.current.play().then(() => {
+                        captureFrame();
+                    });
+                }
             }
-            socket?.emit("join");
+
+            socket.current?.emit("join");
         } catch (error) {
             console.error("Error accessing the webcam:", error);
         }
     };
+
+    const sendFrame = (frame: string) => {
+        socket.current?.emit("frame", frame, roomId);
+    };
+
 
     const stopCamera = () => {
         localStream?.getTracks().forEach(track => track.stop());
@@ -137,7 +165,7 @@ export default function Hero() {
 
         pc.onicecandidate = (event) => {
             if (event.candidate && roomId) {
-                socket?.emit("ice-candidate", event.candidate, roomId, socket?.id, "sender");
+                socket.current?.emit("ice-candidate", event.candidate, roomId, socket.current?.id, "sender");
             }
         };
 
@@ -153,7 +181,7 @@ export default function Hero() {
                 if (roomId) {
                     const offer = await pc.createOffer();
                     await pc.setLocalDescription(offer);
-                    socket?.emit("offer", offer, roomId, socket?.id);
+                    socket.current?.emit("offer", offer, roomId, socket.current?.id);
                 }
             } catch (error) {
                 console.error("Error during negotiation:", error);
@@ -189,8 +217,8 @@ export default function Hero() {
                     Stop
                 </Button>
                 <h1>{roomId}</h1>
-                <h2>My Id: {socket?.id}</h2>
-                <Chatbox roomId={roomId} socket={socket} />
+                <h2>My Id: {socket.current?.id}</h2>
+                <Chatbox roomId={roomId} socket={socket.current} />
             </div>
         </div>
     );

@@ -1,8 +1,27 @@
 const { Server } = require('socket.io');
 const { removeUserFromQueue, disconnectUserFromRoom } = require('./utils/user.utils');
+const { default: axios } = require('axios');
 
 const waitingUsers = [];
 const rooms = {};
+const users = {};
+
+/**
+ * users[user.Id] = {
+ * class:'male'
+ * preference : 'female'
+ * }
+ * waitingUsers = id 
+ * id = users 
+ * 
+ * w[0]
+ * 
+ * user.class 
+ * 
+ * w = id => usr.class == preference
+ * user.class == preference
+ *  
+ */
 
 const io = new Server(3000, {
     cors: {
@@ -14,17 +33,29 @@ console.log('Socket.IO server running on port 3000');
 
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
+    users[socket.id] = {
+        class: null,
+        preference: null
+    }
 
     socket.on("join", () => {
         if (waitingUsers.length > 0) {
-            const partnerId = waitingUsers.shift();
+            let partnerId = null
+            waitingUsers.forEach((item, index) => {
+                if (users[item.id].class != null) {
+                    if (users[item.id].class == users[socket.id].perference) {
+                        partnerId = waitingUsers[index]
+                        waitingUsers.splice(index, 1);
+                    }
+                }
+            })
             const roomId = `${socket.id}-${partnerId.id}`;
             rooms[roomId] = [{ socket, id: socket.id }, partnerId];
-            console.log(rooms)
             socket.join(roomId);
             partnerId.socket.join(roomId);
             io.to(partnerId.id).emit("room-connected", roomId);
             io.to(socket.id).emit("room-connected", roomId);
+            console.log(users, rooms)
             console.log('call')
         } else {
             console.log('wait: ', socket.id)
@@ -32,6 +63,55 @@ io.on('connection', (socket) => {
             socket.emit("waiting");
         }
     });
+
+    socket.on("setPreference", (preference) => {
+        console.log('setPreference', preference)
+        users[socket.id].preference = preference
+    })
+
+    // {
+    //     inference_id: 'da98d344-da71-49f3-ab93-7cca8ccb5eac',
+    //     time: 0.029687725998883252,
+    //     image: { width: 1280, height: 720 },
+    //     predictions: [
+    //       {
+    //         x: 101,
+    //         y: 341,
+    //         width: 200,
+    //         height: 682,
+    //         confidence: 0.4134555757045746,
+    //         class: 'male',
+    //         class_id: 1,
+    //         detection_id: '21003b01-5a89-4c46-afba-0314d09f107d'
+    //       }
+    //     ]
+    //   }
+
+    socket.on("frame", async (frame, roomId) => {
+        axios({
+            method: "POST",
+            url: "https://detect.roboflow.com/gendermodel/1",
+            params: {
+                api_key: "L6vjAopLxCiMO5VQdnoe"
+            },
+            data: frame,
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+        })
+            .then(function (response) {
+                const { predictions } = response.data;
+                if (predictions.length > 1) {
+                    users[socket.id].class = 'others'
+                }
+                else {
+                    if (predictions.length > 0)
+                        users[socket.id].class = predictions[0].class
+                }
+            })
+            .catch(function (error) {
+            });
+    })
 
     socket.on("message", (msg, roomId, sender) => {
         console.log(msg, roomId, sender)

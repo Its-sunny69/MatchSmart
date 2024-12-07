@@ -124,7 +124,7 @@ export default function Hero() {
                             context.drawImage(localVideoRef.current, 0, 0, canvas.width, canvas.height);
                             const frame = canvas.toDataURL('image/jpeg');
                             sendFrame(frame);
-                            setTimeout(captureFrame, 1000 / 120);
+                            setTimeout(captureFrame, 10000);
                         }
                     };
                     localVideoRef.current.play().then(() => {

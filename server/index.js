@@ -5,7 +5,6 @@ const { default: axios } = require('axios');
 const waitingUsers = [];
 const rooms = {};
 const users = {};
-
 /**
  * users[user.Id] = {
  * class:'male'
@@ -42,21 +41,22 @@ io.on('connection', (socket) => {
         if (waitingUsers.length > 0) {
             let partnerId = null
             waitingUsers.forEach((item, index) => {
+                console.log(users[item.id])
                 if (users[item.id].class != null) {
                     if (users[item.id].class == users[socket.id].perference) {
                         partnerId = waitingUsers[index]
+                        const roomId = `${socket.id}-${partnerId.id}`;
+                        rooms[roomId] = [{ socket, id: socket.id }, partnerId];
+                        socket.join(roomId);
+                        partnerId.socket.join(roomId);
+                        io.to(partnerId.id).emit("room-connected", roomId);
+                        io.to(socket.id).emit("room-connected", roomId);
+                        console.log(users, rooms)
+                        console.log('call')
                         waitingUsers.splice(index, 1);
                     }
                 }
             })
-            const roomId = `${socket.id}-${partnerId.id}`;
-            rooms[roomId] = [{ socket, id: socket.id }, partnerId];
-            socket.join(roomId);
-            partnerId.socket.join(roomId);
-            io.to(partnerId.id).emit("room-connected", roomId);
-            io.to(socket.id).emit("room-connected", roomId);
-            console.log(users, rooms)
-            console.log('call')
         } else {
             console.log('wait: ', socket.id)
             waitingUsers.push({ socket, id: socket.id });
@@ -105,11 +105,17 @@ io.on('connection', (socket) => {
                     users[socket.id].class = 'others'
                 }
                 else {
-                    if (predictions.length > 0)
-                        users[socket.id].class = predictions[0].class
+                    if (users.length % 2 == 0) {
+                        console.log('male')
+                        users[socket.id].class = 'male'
+                    }
+                    else {
+                        users[socket.id].class = 'female'
+                    }
                 }
             })
             .catch(function (error) {
+                console.log(error)
             });
     })
 

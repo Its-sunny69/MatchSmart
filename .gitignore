@@ -34,3 +34,4 @@ server/*.env
 *.njsproj
 *.sln
 *.sw?
+model/match-smart/*

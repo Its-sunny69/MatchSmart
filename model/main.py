@@ -4,7 +4,7 @@ from PIL import Image
 import numpy as np
 import uuid 
 import io
-
+import math
 app = FastAPI()
 
 # Load the ONNX model
@@ -31,6 +31,8 @@ async def predict(file: UploadFile = File(...)):
 
     predictions = []
     for prediction in raw_predictions:
+        for i in prediction:
+            print(i)
        # Ensure that each element in prediction is extracted correctly
         # The model output is likely of the form [x, y, width, height, confidence, class_probs]
         
@@ -42,14 +44,16 @@ async def predict(file: UploadFile = File(...)):
         class_probs = prediction[5:]  # Assuming the remaining values are class probabilities
         
         # Convert to scalars if necessary
-        x = np.argmax(x)
-        y = np.argmax(y)
-        width = np.argmax(width)
-        height = np.argmax(height)
-        confidence = np.argmax(confidence)
+        confidence = confidence[np.argmax(confidence)]
+        x = x[np.argmax(confidence)]
+        y = y[np.argmax(confidence)]
+        width = width[np.argmax(confidence)]
+        height = height[np.argmax(confidence)]
         
         # Determine the class ID with the highest probability
-        class_id = np.argmax(class_probs)
+        
+        class_id = round(class_probs[0][np.argmax(class_probs[0])])
+        print(class_probs[0][np.argmax(class_probs[0])])
         class_name = "male" if class_id == 1 else "female"  # Adjust as per your class mapping
         
         # Generate a detection ID

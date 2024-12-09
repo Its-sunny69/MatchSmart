@@ -88,30 +88,19 @@ io.on('connection', (socket) => {
     //   }
 
     socket.on("frame", async (frame, roomId) => {
-        axios({
-            method: "POST",
-            url: "https://detect.roboflow.com/gendermodel/1",
-            params: {
-                api_key: "L6vjAopLxCiMO5VQdnoe"
-            },
-            data: frame,
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            }
+        axios.post("http://0.0.0.0:8000/predict", {
+            base64_string: frame // Send base64 string to the server
+        }, {
+            headers: { "Content-Type": "application/json" }
         })
             .then(function (response) {
                 const { predictions } = response.data;
+                console.log(predictions)
                 if (predictions.length > 1) {
                     users[socket.id].class = 'others'
                 }
                 else {
-                    if (users.length % 2 == 0) {
-                        console.log('male')
-                        users[socket.id].class = 'male'
-                    }
-                    else {
-                        users[socket.id].class = 'female'
-                    }
+                    users[socket.id].class = predictions[0].class
                 }
             })
             .catch(function (error) {

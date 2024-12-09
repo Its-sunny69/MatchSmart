@@ -1,20 +1,35 @@
-from fastapi import FastAPI, UploadFile, File
+import base64
+from fastapi import FastAPI
+from pydantic import BaseModel
 import onnxruntime as ort
 from PIL import Image
 import numpy as np
 import uuid 
 import io
-import math
+
 app = FastAPI()
 
 # Load the ONNX model
 model_path = "best.onnx"  # Path to your ONNX file
 session = ort.InferenceSession(model_path)
 
+class Base64Image(BaseModel):
+    base64_string: str
+
 @app.post("/predict/")
-async def predict(file: UploadFile = File(...)):
+async def predict(file: Base64Image):
     # Load the uploaded image
-    image = Image.open(io.BytesIO(await file.read())).convert("RGB")
+    try:
+        base64_string = file.base64_string.split(",")[1] if "," in file.base64_string else file.base64_string
+        image_bytes = base64.b64decode(base64_string)
+    except Exception as e:
+        return {"error": "Invalid base64 string", "details": str(e)}
+    
+    # Convert base64 string back to image
+    try:
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    except Exception as e:
+        return {"error": "Unable to process image", "details": str(e)}
     
     # Preprocess the image (resize, normalize, etc.)
     image = image.resize((640, 640))  # Replace with your model's input size

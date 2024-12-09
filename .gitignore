@@ -35,3 +35,4 @@ server/*.env
 *.sln
 *.sw?
 model/match-smart/*
+model/__pycache__/*

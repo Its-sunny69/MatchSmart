@@ -33,7 +33,7 @@ export default function Hero() {
 
     useEffect(() => {
         socket.current = getSocket();
-        
+
         socket.current.on("waiting", () => setWaiting(true));
         socket.current.on("room-connected", (id) => {
             setRoomId(id);
@@ -132,8 +132,9 @@ export default function Hero() {
                     });
                 }
             }
-
-            socket.current?.emit("join");
+            setTimeout(() => {
+                socket.current?.emit("join");
+            }, 2000)
         } catch (error) {
             console.error("Error accessing the webcam:", error);
         }

@@ -32,26 +32,27 @@ console.log('Socket.IO server running on port 3000');
 
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
-    users[socket.id] = {
-        class: null,
-        preference: null
+
+    if (!users[socket.id]) {
+        users[socket.id] = {
+            socket,
+            id: socket.id,
+            class: null,
+            preference: null
+        }
     }
 
     socket.on("join", () => {
         if (waitingUsers.length > 0) {
-            let partnerId = null
-            waitingUsers.forEach((item, index) => {
-                console.log(users[item.id])
-                if (users[item.id].class != null) {
-                    if (users[item.id].class == users[socket.id].perference) {
-                        partnerId = waitingUsers[index]
+            waitingUsers.forEach((partnerId, index) => {
+                if (users[partnerId.id]?.class != null) {
+                    if (users[partnerId.id].class == users[socket.id].preference) {
                         const roomId = `${socket.id}-${partnerId.id}`;
                         rooms[roomId] = [{ socket, id: socket.id }, partnerId];
                         socket.join(roomId);
                         partnerId.socket.join(roomId);
                         io.to(partnerId.id).emit("room-connected", roomId);
                         io.to(socket.id).emit("room-connected", roomId);
-                        console.log(users, rooms)
                         console.log('call')
                         waitingUsers.splice(index, 1);
                     }
@@ -65,8 +66,8 @@ io.on('connection', (socket) => {
     });
 
     socket.on("setPreference", (preference) => {
+        users[socket.id].preference = preference;
         console.log('setPreference', preference)
-        users[socket.id].preference = preference
     })
 
     // {
@@ -95,7 +96,6 @@ io.on('connection', (socket) => {
         })
             .then(function (response) {
                 const { predictions } = response.data;
-                console.log(predictions)
                 if (predictions.length > 1) {
                     users[socket.id].class = 'others'
                 }
@@ -135,6 +135,7 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
+        delete users[socket.id]
         removeUserFromQueue(socket.id, waitingUsers);
         disconnectUserFromRoom(socket.id, rooms, io);
     });

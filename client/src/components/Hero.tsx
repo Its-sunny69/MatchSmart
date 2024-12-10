@@ -50,7 +50,6 @@ export default function Hero() {
             setTimeout(() => {
                 const track1 = pc.getTransceivers()[0].receiver.track
                 const track2 = pc.getTransceivers()[1].receiver.track
-                // Update remoteVideoRef with the remote stream
                 if (remoteVideoRef.current) {
                     if (track1.kind === "video") {
                         remoteVideoRef.current.srcObject = new MediaStream([track1, track2]);
@@ -97,10 +96,12 @@ export default function Hero() {
         }
     }, [localStream, roomId]);
 
+    useEffect(() => {
+        startCamera()
+    }, [])
+
     const startCamera = async () => {
         try {
-            let gender: boolean = confirm("do you like male")
-            socket.current?.emit('setPreference', gender ? 'male' : 'female');
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } },
                 audio: true,
@@ -132,11 +133,16 @@ export default function Hero() {
                     });
                 }
             }
-            setTimeout(() => {
-                socket.current?.emit("join");
-            }, 2000)
         } catch (error) {
             console.error("Error accessing the webcam:", error);
+        }
+    };
+
+    const joinRoom = () => {
+        let gender: boolean = confirm("do you like male")
+        socket.current?.emit('setPreference', gender ? 'male' : 'female');
+        if (socket.current) {
+            socket.current.emit("join");
         }
     };
 
@@ -206,7 +212,7 @@ export default function Hero() {
                     type="button"
                     disabled={!waiting}
                     className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
-                    onClick={startCamera}
+                    onClick={joinRoom}
                 >
                     {waiting ? "Find a Partner" : "Connected"}
                 </Button>

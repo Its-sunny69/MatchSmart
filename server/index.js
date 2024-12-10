@@ -5,22 +5,6 @@ const { default: axios } = require('axios');
 const waitingUsers = [];
 const rooms = {};
 const users = {};
-/**
- * users[user.Id] = {
- * class:'male'
- * preference : 'female'
- * }
- * waitingUsers = id 
- * id = users 
- * 
- * w[0]
- * 
- * user.class 
- * 
- * w = id => usr.class == preference
- * user.class == preference
- *  
- */
 
 const io = new Server(3000, {
     cors: {
@@ -44,7 +28,9 @@ io.on('connection', (socket) => {
 
     socket.on("join", () => {
         if (waitingUsers.length > 0) {
+            console.log(users)
             waitingUsers.forEach((partnerId, index) => {
+                console.log(users[partnerId.id].class, users[socket.id].class)
                 if (users[partnerId.id]?.class != null) {
                     if (users[partnerId.id].class == users[socket.id].preference) {
                         const roomId = `${socket.id}-${partnerId.id}`;
@@ -70,24 +56,6 @@ io.on('connection', (socket) => {
         console.log('setPreference', preference)
     })
 
-    // {
-    //     inference_id: 'da98d344-da71-49f3-ab93-7cca8ccb5eac',
-    //     time: 0.029687725998883252,
-    //     image: { width: 1280, height: 720 },
-    //     predictions: [
-    //       {
-    //         x: 101,
-    //         y: 341,
-    //         width: 200,
-    //         height: 682,
-    //         confidence: 0.4134555757045746,
-    //         class: 'male',
-    //         class_id: 1,
-    //         detection_id: '21003b01-5a89-4c46-afba-0314d09f107d'
-    //       }
-    //     ]
-    //   }
-
     socket.on("frame", async (frame, roomId) => {
         axios.post("http://0.0.0.0:8000/predict", {
             base64_string: frame // Send base64 string to the server
@@ -100,7 +68,8 @@ io.on('connection', (socket) => {
                     users[socket.id].class = 'others'
                 }
                 else {
-                    users[socket.id].class = predictions[0].class
+                    if (users[socket.id])
+                        users[socket.id].class = predictions[0].class
                 }
             })
             .catch(function (error) {

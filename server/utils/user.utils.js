@@ -1,7 +1,9 @@
 // Helper to remove a user from the waiting queue
 function removeUserFromQueue(userId, waitingUsers) {
-    const index = waitingUsers.indexOf(userId);
-    if (index > -1) waitingUsers.splice(index, 1);
+    const index = waitingUsers.findIndex(user => user.id === userId);
+    if (index !== -1) {
+        waitingUsers.splice(index, 1); // Remove the user from the queue
+    }
 }
 
 function disconnectUserFromRoom(userId, rooms) {

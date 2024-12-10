@@ -28,11 +28,11 @@ io.on('connection', (socket) => {
 
     socket.on("join", () => {
         if (waitingUsers.length > 0) {
-            console.log(users)
+            console.log(waitingUsers)
             waitingUsers.forEach((partnerId, index) => {
-                console.log(users[partnerId.id].class, users[socket.id].class)
                 if (users[partnerId.id]?.class != null) {
-                    if (users[partnerId.id].class == users[socket.id].preference) {
+                    console.log(users[partnerId.id].class, users[socket.id].preference)
+                    if (users[partnerId.id]?.class == users[socket.id]?.preference) {
                         const roomId = `${socket.id}-${partnerId.id}`;
                         rooms[roomId] = [{ socket, id: socket.id }, partnerId];
                         socket.join(roomId);
@@ -105,6 +105,7 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
         delete users[socket.id]
+
         removeUserFromQueue(socket.id, waitingUsers);
         disconnectUserFromRoom(socket.id, rooms, io);
     });

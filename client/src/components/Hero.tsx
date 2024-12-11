@@ -100,7 +100,9 @@ export default function Hero() {
       if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
       setRoomId("");
       setWaiting(true);
-      socket.current?.emit("join");
+      setTimeout(() => {
+        socket.current?.emit("join");
+      }, 2000)
     });
 
     // socket.current?.on("partner-skipped", () => {
@@ -202,12 +204,11 @@ export default function Hero() {
   };
 
   const skipChat = () => {
-    console.log("Hero", socket.current?.id);
     socket.current?.emit("skip", socket.current?.id, roomId);
 
-    senderPeerConnection.current?.close();
+    receiverPeerConnection.current?.close();
 
-    senderPeerConnection.current = null;
+    receiverPeerConnection.current = null;
 
     setRoomId("");
     setWaiting(true);

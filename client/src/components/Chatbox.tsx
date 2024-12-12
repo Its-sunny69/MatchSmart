@@ -3,7 +3,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Socket } from "socket.io-client";
 import SendSvg from "../assets/send.svg";
-import "../App.css"
+import "../App.css";
 
 interface ChatboxProps {
   roomId: string;
@@ -122,23 +122,25 @@ const Chatbox: React.FC<ChatboxProps> = ({ roomId, socket }) => {
   };
 
   return (
-    <div className="w-full h-fit flex-col">
-      <div className="w-full bg-[url('../src/assets/chat-background.jpeg')] bg-cover border-2 min-h-[200px] max-h-[400px] p-1">
+    <div className="w-full h-full flex-col">
+      <div className="w-full h-full bg-[url('../src/assets/chat-background.jpeg')] bg-cover border-2 flex flex-col justify-end  p-1">
         <div
-          className="customScroll w-full h-[20rem] overflow-y-auto"
+          className="customScroll w-full h-full overflow-y-auto"
           ref={chatContainerRef}
         >
           {messages.map((msgObj, index) => (
             <div
               key={index}
-              className={`w-full p-2 flex justify-start items-start ${msgObj.id === socket?.id ? "" : ""
-                }`}
+              className={`w-full p-2 flex justify-start items-start ${
+                msgObj.id === socket?.id ? "" : ""
+              }`}
             >
               <div
-                className={`max-w-xs px-1.5 py-1 rounded-xl ${msgObj.id === socket?.id
+                className={`max-w-xs px-1.5 py-1 rounded-xl ${
+                  msgObj.id === socket?.id
                     ? " text-white mr-0 rounded-br-[2px]"
                     : "bg-[#d1d5db55] backdrop-blur-sm text-white ml-0 rounded-bl-[2px]"
-                  }`}
+                }`}
                 style={{
                   backgroundColor:
                     msgObj.id === socket?.id
@@ -157,7 +159,7 @@ const Chatbox: React.FC<ChatboxProps> = ({ roomId, socket }) => {
             </div>
           ))}
         </div>
-        <div className="w-full mt-5 flex justify-center items-center">
+        <div className="w-full mb-auto flex justify-center items-center">
           <div className=" border border-white bg-[#d1d5db55] backdrop-blur-sm w-full mx-1  md:w-[70%] flex justify-center items-center rounded-full p-1">
             <div className="w-full mx-2 flex justify-center items-center rounded-full">
               <Input
@@ -177,7 +179,11 @@ const Chatbox: React.FC<ChatboxProps> = ({ roomId, socket }) => {
               className="border-2 group py-1 px-3.5 bg-[#12a986] rounded-full hover:bg-[#12a986] border-none active:scale-95 transition-all"
               onClick={handleSendMessage}
             >
-              <img src={SendSvg} alt="Send" className="group-hover:rotate-45 transition-all" />
+              <img
+                src={SendSvg}
+                alt="Send"
+                className="group-hover:rotate-45 transition-all"
+              />
             </Button>
           </div>
         </div>

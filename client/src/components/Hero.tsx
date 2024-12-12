@@ -102,7 +102,7 @@ export default function Hero() {
       setWaiting(true);
       setTimeout(() => {
         socket.current?.emit("join");
-      }, 2000)
+      }, 2000);
     });
 
     // socket.current?.on("partner-skipped", () => {
@@ -198,11 +198,6 @@ export default function Hero() {
     socket.current?.emit("frame", frame, roomId);
   };
 
-  const stopCamera = () => {
-    localStream?.getTracks().forEach((track) => track.stop());
-    if (localVideoRef.current) localVideoRef.current.srcObject = null;
-  };
-
   const skipChat = () => {
     socket.current?.emit("skip", socket.current?.id, roomId);
 
@@ -263,8 +258,8 @@ export default function Hero() {
 
   return (
     <div className="w-full h-fit min-h-[500px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
-      <div className="w-full h-full flex flex-col">
-        <div className="w-full h-[300px] bg-red-600">
+      <div className="w-fit h-full flex flex-col gap-5">
+        <div className="w-fit h-[300px] border border-black rounded-lg overflow-hidden">
           <video
             className="w-full h-full"
             autoPlay
@@ -273,42 +268,40 @@ export default function Hero() {
             ref={localVideoRef}
           ></video>
         </div>
-        <div className="w-full h-[300px] bg-blue-600">
-          {localStream && waiting && <p>Waiting for a partner...</p>}
-          <video
-            className="w-full h-full"
-            autoPlay
-            playsInline
-            ref={remoteVideoRef}
-          ></video>
+        <div className="w-full h-[300px] flex justify-center items-center bg-slate-400 border border-black rounded-lg overflow-hidden">
+          {localStream && waiting ? (
+            <p className="flex justify-center items-center h-full w-full">
+              Waiting for a partner...
+            </p>
+          ) : (
+            <video
+              className="w-full h-full"
+              autoPlay
+              playsInline
+              ref={remoteVideoRef}
+            ></video>
+          )}
         </div>
       </div>
-      <div className="w-full h-fit flex flex-col justify-center items-start p-2">
-        <Button
-          type="button"
-          disabled={!waiting}
-          className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
-          onClick={joinRoom}
-        >
-          {waiting ? "Find a Partner" : "Connected"}
-        </Button>
-        <Button
-          type="button"
-          className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
-          onClick={skipChat}
-        >
-          Skip
-        </Button>
+      <div className="w-full h-full flex flex-col justify-center items-start p-2">
+        <div className="flex gap-4">
+          <Button
+            type="button"
+            disabled={!waiting}
+            className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
+            onClick={joinRoom}
+          >
+            {waiting ? "Find a Partner" : "Connected"}
+          </Button>
+          <Button
+            type="button"
+            className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
+            onClick={skipChat}
+          >
+            Skip
+          </Button>
+        </div>
 
-        <Button
-          type="button"
-          className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
-          onClick={stopCamera}
-        >
-          Stop Camera
-        </Button>
-        <h1>{roomId}</h1>
-        <h2>My Id: {socket.current?.id}</h2>
         <Chatbox roomId={roomId} socket={socket.current} />
       </div>
     </div>

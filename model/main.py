@@ -7,20 +7,12 @@ import numpy as np
 import io
 import random
 import string
-import fastapi.middleware.cors as CORSMiddleware
 
 def generate_random_id(length=8):
     characters = string.ascii_letters + string.digits
     return ''.join(random.choice(characters) for _ in range(length))
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["https://match-smart-server.vercel.app"],  # Change "*" to specific domains for stricter control
-    allow_credentials=True,
-    allow_methods=["POST"],  # Allow all HTTP methods
-    allow_headers=["Content-Type"],  # Allow all headers
-)
 # Load the ONNX model
 model_path = "best.onnx"  # Path to your ONNX file
 session = ort.InferenceSession(model_path)

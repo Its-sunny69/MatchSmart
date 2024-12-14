@@ -14,7 +14,10 @@ const users = {};
 
 const io = new Server(3000, {
     cors: {
-        origin: "*",
+        origin: "https://match-smart.vercel.app",
+        methods: ["GET", "POST"],
+        allowedHeaders: ["Content-Type"],
+        credentials: true
     },
 });
 

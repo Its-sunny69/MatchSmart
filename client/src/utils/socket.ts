@@ -2,7 +2,7 @@ import { io, Socket } from "socket.io-client";
 
 const getSocket = () => {
 
-    const socket: Socket = io("http://localhost:3000");
+    const socket: Socket = io(import.meta.env.API_URL);
 
     socket.on("connect", () => {
         console.log("Connected:", socket.id);

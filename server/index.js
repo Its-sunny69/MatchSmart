@@ -6,6 +6,7 @@ const {
 } = require("./utils/user.utils");
 const { default: axios } = require("axios");
 const { findUserById } = require("./utils/room.utils");
+require("dotenv").config()
 
 const waitingUsers = [];
 const rooms = {};
@@ -73,7 +74,7 @@ io.on("connection", (socket) => {
     socket.on("frame", async (frame, roomId) => {
         axios
             .post(
-                "http://0.0.0.0:8000/predict",
+                `${process.env.MODEL_API}predict`,
                 {
                     base64_string: frame, // Send base64 string to the server
                 },

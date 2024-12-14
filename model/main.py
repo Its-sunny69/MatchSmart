@@ -4,9 +4,13 @@ from pydantic import BaseModel
 import onnxruntime as ort
 from PIL import Image
 import numpy as np
-import uuid 
 import io
+import random
+import string
 
+def generate_random_id(length=8):
+    characters = string.ascii_letters + string.digits
+    return ''.join(random.choice(characters) for _ in range(length))
 app = FastAPI()
 
 # Load the ONNX model
@@ -72,7 +76,8 @@ async def predict(file: Base64Image):
         class_name = "male" if class_id == 1 else "female"  # Adjust as per your class mapping
         
         # Generate a detection ID
-        detection_id = str(uuid.uuid4())
+        
+        detection_id = generate_random_id()
         
         predictions.append({
             "x": float(x),

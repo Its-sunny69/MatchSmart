@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "dev": "npx nodemon index.js"
+    "dev": "npx nodemon index.js",
+    "build": "netlify deploy --prod"
   },
   "dependencies": {
     "axios": "^1.7.9",

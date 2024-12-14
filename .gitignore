@@ -36,3 +36,5 @@ server/*.env
 *.sw?
 model/match-smart/*
 model/__pycache__/*
+# Local Netlify folder
+.netlify

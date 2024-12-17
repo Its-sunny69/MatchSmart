@@ -33,7 +33,12 @@ const ICE_SERVERS = {
   ],
 };
 
-export default function Hero() {
+interface HeroProps {
+  preference: string,
+  setIsOpen: Function
+}
+
+const Hero: React.FC<HeroProps> = ({ preference, setIsOpen }) => {
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
   const senderPeerConnection = useRef<RTCPeerConnection | null>(null);
@@ -120,18 +125,6 @@ export default function Hero() {
       }, 2000);
     });
 
-    // socket.current?.on("partner-skipped", () => {
-    //   senderPeerConnection.current?.close();
-    //   receiverPeerConnection.current?.close();
-
-    //   senderPeerConnection.current = null;
-    //   receiverPeerConnection.current = null;
-    //   if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
-    //   setRoomId("");
-    //   setWaiting(true);
-    //   socket.current?.emit("join");
-    // });
-
     return () => {
       socket.current?.disconnect();
       senderPeerConnection.current?.close();
@@ -202,8 +195,8 @@ export default function Hero() {
   };
 
   const joinRoom = () => {
-    let gender: boolean = confirm("do you like male");
-    socket.current?.emit("setPreference", gender ? "male" : "female");
+    setIsOpen(true)
+    socket.current?.emit("setPreference", preference);
     if (socket.current) {
       socket.current.emit("join");
     }
@@ -303,18 +296,23 @@ export default function Hero() {
           <Button
             type="button"
             disabled={!waiting}
-            className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
+            className="focus:outline-none text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
             onClick={joinRoom}
           >
             {waiting ? "Find a Partner" : "Connected"}
           </Button>
-          <Button
-            type="button"
-            className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
-            onClick={skipChat}
-          >
-            Skip
-          </Button>
+          {
+            !waiting &&
+            (
+              <Button
+                type="button"
+                className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
+                onClick={skipChat}
+              >
+                Skip
+              </Button>
+            )
+          }
         </div>
 
         <Chatbox roomId={roomId} socket={socket.current} />
@@ -322,3 +320,6 @@ export default function Hero() {
     </div>
   );
 }
+
+
+export default Hero;

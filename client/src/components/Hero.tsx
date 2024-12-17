@@ -2,23 +2,45 @@ import { useEffect, useRef, useState } from "react";
 import { getSocket, Socket } from "../utils/socket";
 import Chatbox from "./Chatbox";
 import { Button } from "./ui/button";
+import { toast } from "sonner";
 
 const ICE_SERVERS = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun.l.google.com:5349" },
-    { urls: "stun:stun1.l.google.com:3478" },
-    { urls: "stun:stun1.l.google.com:5349" },
-    { urls: "stun:stun2.l.google.com:19302" },
-    { urls: "stun:stun2.l.google.com:5349" },
-    { urls: "stun:stun3.l.google.com:3478" },
-    { urls: "stun:stun3.l.google.com:5349" },
-    { urls: "stun:stun4.l.google.com:19302" },
-    { urls: "stun:stun4.l.google.com:5349" },
+    {
+      urls: "stun:stun.relay.metered.ca:80",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:80",
+      username: "27f60d5012436bb4337c1b0e",
+      credential: "ipY5XP08LchtkTNc",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:80?transport=tcp",
+      username: "27f60d5012436bb4337c1b0e",
+      credential: "ipY5XP08LchtkTNc",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:443",
+      username: "27f60d5012436bb4337c1b0e",
+      credential: "ipY5XP08LchtkTNc",
+    },
+    {
+      urls: "turns:global.relay.metered.ca:443?transport=tcp",
+      username: "27f60d5012436bb4337c1b0e",
+      credential: "ipY5XP08LchtkTNc",
+    },
   ],
 };
 
-export default function Hero() {
+interface HeroProps {
+  preference: string,
+  setIsOpen: Function,
+  isOpen:boolean
+}
+
+const Hero: React.FC<HeroProps> = ({ preference, setIsOpen , isOpen }) => {
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
   const senderPeerConnection = useRef<RTCPeerConnection | null>(null);
@@ -105,18 +127,6 @@ export default function Hero() {
       }, 2000);
     });
 
-    // socket.current?.on("partner-skipped", () => {
-    //   senderPeerConnection.current?.close();
-    //   receiverPeerConnection.current?.close();
-
-    //   senderPeerConnection.current = null;
-    //   receiverPeerConnection.current = null;
-    //   if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
-    //   setRoomId("");
-    //   setWaiting(true);
-    //   socket.current?.emit("join");
-    // });
-
     return () => {
       socket.current?.disconnect();
       senderPeerConnection.current?.close();
@@ -182,13 +192,14 @@ export default function Hero() {
         }
       }
     } catch (error) {
+      toast.error("Error accessing video")
       console.error("Error accessing the webcam:", error);
     }
   };
 
   const joinRoom = () => {
-    let gender: boolean = confirm("do you like male");
-    socket.current?.emit("setPreference", gender ? "male" : "female");
+    setIsOpen(true)
+    socket.current?.emit("setPreference", preference);
     if (socket.current) {
       socket.current.emit("join");
     }
@@ -259,20 +270,13 @@ export default function Hero() {
   return (
     <div className="w-full h-fit min-h-[500px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
       <div className="w-fit h-full flex flex-col gap-5">
-        <div className="w-fit h-[300px] border border-black rounded-lg overflow-hidden">
-          <video
-            className="w-full h-full"
-            autoPlay
-            playsInline
-            muted
-            ref={localVideoRef}
-          ></video>
-        </div>
-        <div className="w-full h-[300px] flex justify-center items-center bg-slate-400 border border-black rounded-lg overflow-hidden">
+        <div className="w-full h-[300px] flex justify-center items-center bg-gray-600 border border-black rounded-lg overflow-hidden">
           {localStream && waiting ? (
-            <p className="flex justify-center items-center h-full w-full">
-              Waiting for a partner...
-            </p>
+            <div className="flex justify-center items-center h-full w-full">
+              {
+                isOpen && ("waiting for partner")
+              }
+            </div>
           ) : (
             <video
               className="w-full h-full"
@@ -282,24 +286,38 @@ export default function Hero() {
             ></video>
           )}
         </div>
+        <div className="w-fit h-[300px] border border-black rounded-lg overflow-hidden">
+          <video
+            className="w-full h-full"
+            autoPlay
+            playsInline
+            muted
+            ref={localVideoRef}
+          ></video>
+        </div>
       </div>
       <div className="w-full h-full flex flex-col justify-center items-start p-2">
         <div className="flex gap-4">
           <Button
             type="button"
             disabled={!waiting}
-            className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
+            className="focus:outline-none text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
             onClick={joinRoom}
           >
             {waiting ? "Find a Partner" : "Connected"}
           </Button>
-          <Button
-            type="button"
-            className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
-            onClick={skipChat}
-          >
-            Skip
-          </Button>
+          {
+            !waiting &&
+            (
+              <Button
+                type="button"
+                className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-red-600 dark:hover:bg-red-700"
+                onClick={skipChat}
+              >
+                Skip
+              </Button>
+            )
+          }
         </div>
 
         <Chatbox roomId={roomId} socket={socket.current} />
@@ -307,3 +325,6 @@ export default function Hero() {
     </div>
   );
 }
+
+
+export default Hero;

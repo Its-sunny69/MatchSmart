@@ -6,7 +6,7 @@ const {
 } = require("./utils/user.utils");
 const { default: axios } = require("axios");
 const { findUserById } = require("./utils/room.utils");
-require("dotenv").config()
+require("dotenv").config();
 
 const waitingUsers = [];
 const rooms = {};
@@ -17,7 +17,7 @@ const io = new Server(3000, {
         origin: "https://match-smart.vercel.app",
         methods: ["GET", "POST"],
         allowedHeaders: ["Content-Type"],
-        credentials: true
+        credentials: true,
     },
 });
 
@@ -91,18 +91,13 @@ io.on("connection", (socket) => {
                 const { predictions } = response.data;
                 if (predictions.length > 1) {
                     users[socket.id].class = "others";
-                } else {
-                    if (users[socket.id]) users[socket.id].class = predictions[0].class;
                 }
-            })
-            .catch(function (error) {
-                console.log(error);
             });
     });
 
     socket.on("message", (msg, roomId, sender) => {
         console.log(msg, roomId, sender);
-        socket.to(roomId).emit("message", msg, sender);
+        socket.to(roomId).emit("message", msg, sender, roomId);
     });
 
     socket.on("offer", (offer, roomId, id) => {
@@ -130,6 +125,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on("skip", (id, roomId) => {
+        io.in(roomId).emit("clear-chat");
         handleSkip(id, roomId, rooms, waitingUsers, users);
     });
 

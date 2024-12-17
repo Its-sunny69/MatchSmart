@@ -37,10 +37,10 @@ const ICE_SERVERS = {
 interface HeroProps {
   preference: string,
   setIsOpen: Function,
-  isOpen:boolean
+  isOpen: boolean
 }
 
-const Hero: React.FC<HeroProps> = ({ preference, setIsOpen , isOpen }) => {
+const Hero: React.FC<HeroProps> = ({ preference, setIsOpen, isOpen }) => {
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
   const senderPeerConnection = useRef<RTCPeerConnection | null>(null);
@@ -199,11 +199,7 @@ const Hero: React.FC<HeroProps> = ({ preference, setIsOpen , isOpen }) => {
 
   const joinRoom = () => {
     setIsOpen(true)
-    socket.current?.emit("setPreference", preference);
-    if (socket.current) {
-      socket.current.emit("join");
-    }
-  };
+  }
 
   const sendFrame = (frame: string) => {
     socket.current?.emit("frame", frame, roomId);

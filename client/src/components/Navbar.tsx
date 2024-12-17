@@ -1,12 +1,22 @@
+import { Socket } from "socket.io-client";
 import { ModeToggle } from "./mode-toggle";
 import { Button } from "./ui/button";
+import { useEffect, useRef } from "react";
+import { getSocket } from "@/utils/socket";
 
 interface NavbarProps {
   isOpened: boolean,
   preference: string,
+  setPreference: Function
 }
 
-const Navbar: React.FC<NavbarProps> = ({ isOpened, preference }) => {
+const Navbar: React.FC<NavbarProps> = ({ isOpened, preference, setPreference }) => {
+  const socket = useRef<Socket | null>(null);
+
+  useEffect(() => {
+    socket.current = getSocket();
+  }, []);
+
   return (
     <div className="w-full h-fit py-2 text-gray-500 flex justify-center items-center select-none border-b-2 mb-5">
       <div className="flex w-full justify-start">
@@ -33,12 +43,14 @@ const Navbar: React.FC<NavbarProps> = ({ isOpened, preference }) => {
               <Button
                 type="button"
                 className={`text-white bg-blue-700 hover:bg-blue-800 ${preference == 'male' && 'outline outline-1 outline-offset-4 outline-blue-600'} focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800`}
+                onClick={() => { setPreference('male'); socket.current?.emit('setPreference', 'male') }}
               >
                 Male
               </Button>
               <Button
                 type="button"
                 className={`text-white bg-fuchsia-400 hover:bg-gray-900 ${preference == 'female' && 'outline outline-1 outline-offset-4 outline-fuchsia-400'} font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-fuchsia-400 dark:hover:bg-fuchsia-500 dark:focus:ring-gray-700 dark:border-gray-700 `}
+                onClick={() => { setPreference('female'); socket.current?.emit('setPreference', 'female') }}
               >
                 Female
               </Button>

@@ -46,7 +46,9 @@ io.on("connection", (socket) => {
                     console.log(users[partnerId.id].class, users[socket.id].preference);
                     if (
                         users[partnerId.id]?.class == users[socket.id]?.preference &&
+                        users[partnerId.id]?.preference == users[socket.id]?.class &&
                         partnerId.id !== socket.id &&
+                        partnerId.prev != socket.id &&
                         partnerId.id != users[socket.id].prev &&
                         !findUserById(partnerId.id, rooms)
                     ) {

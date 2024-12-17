@@ -4,6 +4,7 @@ import Hero from './components/Hero'
 import Navbar from './components/Navbar'
 import { ThemeProvider } from "@/components/theme-provider"
 import PopupModal from './components/PopupModal'
+import { Toaster } from './components/ui/sonner'
 
 function App() {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,9 +13,10 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <Toaster />
       <div className='w-screen min-h-screen '>
         <Navbar isOpened={isOpened} preference={preference} />
-        <Hero preference={preference} setIsOpen={setIsOpen} />
+        <Hero preference={preference} setIsOpen={setIsOpen} isOpen={isOpened} />
         <PopupModal setPreference={setPreference} isOpen={isOpen} setIsOpen={setIsOpen} setIsOpened={setIsOpened} isOpened={isOpened} />
       </div>
     </ThemeProvider>

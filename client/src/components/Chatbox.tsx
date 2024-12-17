@@ -24,6 +24,10 @@ const Chatbox: React.FC<ChatboxProps> = ({ roomId, socket }) => {
   >({});
 
   useEffect(() => {
+    socket?.on("clear-chat", () => {
+      setMessages([]);
+      console.log("chat-cleared");
+    });
     // Listen for incoming messages and update the messages array
     socket?.on("message", (msg: string, id: string) => {
       setMessages((prevMessages) => [...prevMessages, { id, msg }]);
@@ -32,6 +36,7 @@ const Chatbox: React.FC<ChatboxProps> = ({ roomId, socket }) => {
     // Clean up the listener when the component unmounts
     return () => {
       socket?.off("message");
+      socket?.off("clear-chat");
     };
   }, [socket]);
 
@@ -120,6 +125,8 @@ const Chatbox: React.FC<ChatboxProps> = ({ roomId, socket }) => {
     ]);
     setMessage("");
   };
+
+  console.log(messages);
 
   return (
     <div className="w-full h-full flex-col">

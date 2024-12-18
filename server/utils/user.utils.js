@@ -44,6 +44,7 @@ function handleSkip(id, roomId, rooms, waitingUsers, users) {
 
       partner.socket.leave(roomId);
       users[id].prev = partner.id;
+      users[partner.id].prev = id
       // Add the partner back to the waiting pool
       waitingUsers.push({ socket: partner.socket, id: partner.id });
     }

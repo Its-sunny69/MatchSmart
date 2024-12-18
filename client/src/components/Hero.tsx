@@ -8,7 +8,11 @@ const ICE_SERVERS = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun.l.google.com:5349" },
-    { urls: import.meta.env.VITE_TURN_URL, 
+    {
+      urls: "stun:stun.relay.metered.ca:80",
+    },
+    {
+      urls: import.meta.env.VITE_TURN_URL,
       username: import.meta.env.VITE_TURN_SERVER_USERNAME,
       credential: import.meta.env.VITE_TURN_SERVER_PASSWORD
     }

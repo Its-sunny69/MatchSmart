@@ -91,7 +91,12 @@ io.on("connection", (socket) => {
                 const { predictions } = response.data;
                 if (predictions.length > 1) {
                     users[socket.id].class = "others";
+                } else {
+                    if (users[socket.id]) users[socket.id].class = predictions[0].class;
                 }
+            })
+            .catch(function (error) {
+                console.log(error);
             });
     });
 

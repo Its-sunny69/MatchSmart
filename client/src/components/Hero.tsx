@@ -21,10 +21,12 @@ const ICE_SERVERS = {
 
 interface HeroProps {
   setIsOpen: Function,
-  isOpen: boolean
+  isOpen: boolean,
+  waiting:boolean,
+  setWaiting:Function
 }
 
-const Hero: React.FC<HeroProps> = ({ setIsOpen, isOpen }) => {
+const Hero: React.FC<HeroProps> = ({ setIsOpen, isOpen , waiting , setWaiting }) => {
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
   const senderPeerConnection = useRef<RTCPeerConnection | null>(null);
@@ -36,7 +38,6 @@ const Hero: React.FC<HeroProps> = ({ setIsOpen, isOpen }) => {
     useState<MediaStreamTrack | null>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [roomId, setRoomId] = useState<string>("");
-  const [waiting, setWaiting] = useState(true);
 
   useEffect(() => {
     socket.current = getSocket();

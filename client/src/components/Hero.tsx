@@ -178,7 +178,6 @@ const Hero: React.FC<HeroProps> = ({ setIsOpen, isOpen , waiting , setWaiting })
       }
     } catch (error) {
       toast.error("Error accessing video")
-      console.error("Error accessing the webcam:", error);
     }
   };
 
@@ -231,7 +230,6 @@ const Hero: React.FC<HeroProps> = ({ setIsOpen, isOpen , waiting , setWaiting })
     pc.oniceconnectionstatechange = () => {
       console.log("ICE Connection State:", pc.iceConnectionState);
       if (pc.iceConnectionState === "disconnected") {
-        console.warn("Peer disconnected.");
       }
     };
 
@@ -243,7 +241,6 @@ const Hero: React.FC<HeroProps> = ({ setIsOpen, isOpen , waiting , setWaiting })
           socket.current?.emit("offer", offer, roomId, socket.current?.id);
         }
       } catch (error) {
-        console.error("Error during negotiation:", error);
       }
     };
   };

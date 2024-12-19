@@ -15,7 +15,7 @@ function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <Toaster />
-      <div className='w-screen min-h-screen '>
+      <div className='w-[100%] min-h-screen '>
         <Navbar isOpened={isOpened} preference={preference} setPreference={setPreference} waiting={waiting} />
         <Hero setIsOpen={setIsOpen} isOpen={isOpened} waiting={waiting} setWaiting={setWaiting} />
         <PopupModal setPreference={setPreference} isOpen={isOpen} setIsOpen={setIsOpen} setIsOpened={setIsOpened} isOpened={isOpened} />

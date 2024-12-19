@@ -27,7 +27,7 @@ const Navbar: React.FC<NavbarProps> = ({ isOpened, preference, setPreference, wa
   }
 
   return (
-    <div className="w-full h-fit py-2 text-gray-500 flex justify-center items-center select-none border-b-2 mb-5">
+    <div className="w-full h-fit py-2 md:px-3 pr-5 text-gray-500 flex justify-center items-center select-none border-b-2 mb-5">
       <div className="flex w-full justify-start">
         <a
           href="https://flowbite.com/"

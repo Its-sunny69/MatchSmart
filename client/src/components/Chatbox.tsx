@@ -26,7 +26,6 @@ const Chatbox: React.FC<ChatboxProps> = ({ roomId, socket }) => {
   useEffect(() => {
     socket?.on("clear-chat", () => {
       setMessages([]);
-      console.log("chat-cleared");
     });
     // Listen for incoming messages and update the messages array
     socket?.on("message", (msg: string, id: string) => {
@@ -126,7 +125,6 @@ const Chatbox: React.FC<ChatboxProps> = ({ roomId, socket }) => {
     setMessage("");
   };
 
-  console.log(messages);
 
   return (
     <div className="w-full h-full flex-col">

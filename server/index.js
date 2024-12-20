@@ -94,13 +94,13 @@ io.on("connection", (socket) => {
                 } else {
                     if (users[socket.id]) users[socket.id].class = predictions[0].class;
                 }
-                console.log(users?.keys()?.length)
+                console.log(Object.keys(users).length);
             })
             .catch(function (error) {
                 console.log(error);
             });
     });
-    console.log(users?.keys()?.length)
+   console.log(Object.keys(users).length);
 
     socket.on("message", (msg, roomId, sender) => {
         console.log(msg, roomId, sender);
